@@ -32,7 +32,7 @@ def create_jobs():
 
     jobs = []
     for next_job in Conf.jobdef:
-        logging.getLogger('main').info('creating %s', next_job)
+        logging.getLogger('main').info('create_jobs %s', next_job)
 
         job = core.scheduler.job(name = next_job[0],
                                  action = eval(next_job[0])(next_job[2]),
@@ -58,6 +58,18 @@ if __name__ == '__main__':
                         format = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                         datefmt = '%Y-%m-%d %H:%M:%S',
                         filename = log_file)
+    ch = logging.StreamHandler()
+    ch.setLevel(Conf.loglevel)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+    ch.setFormatter(formatter)
+    # add the handlers to logger
+    logging.getLogger('main').addHandler(ch)
+    #logging.getLogger('runner').addHandler(ch)
+    logging.getLogger('scheduler').addHandler(ch)
+    #ch.setLevel(logging.INFO)
+    logging.getLogger('http').addHandler(ch)
+    logging.getLogger('surfweb').addHandler(ch)
 
     logging.getLogger('main').info('Configuration %s loaded', config_file)
 

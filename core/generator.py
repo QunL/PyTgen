@@ -33,7 +33,8 @@ import ftplib
 import shutil
 import telnetlib
 import paramiko
-import xmpp
+import surfweb
+###import xmpp
 
 
 class ping_gen():
@@ -87,27 +88,46 @@ class http_gen():
         self._urls = params[0]
         self._num = params[1]
         self._multiplier = 5
+        self._width = 5
+        self._depth = 5
+        
 
         if len(params) == 3:
             self._multiplier = params[2]
+        self._opener = urllib2.build_opener()
+        self._opener.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 5.1; rv:10.0.1) Gecko/20100101 Firefox/10.0.1')]
+        logging.getLogger(self.__generator__).info("HTTP init:num%d multiplier%d"%(self._num, self._multiplier))
+        self.surf_web = surfweb.SurfWeb()
+
 
     def __call__(self):
         for _ in range(self._num):
             url = self._urls[random.randint(0, (len(self._urls) - 1))]
             logging.getLogger(self.__generator__).info("Requesting: %s", url)
 
+            self.surf_web.browse_url(url)
+            '''
             try:
                 for __ in range(int(random.random() * 10 + 1)):
-                  response = urllib2.urlopen(url)
-                  logging.getLogger(self.__generator__).debug("Recieved %s bytes from %s",
+                  response = self._opener.open(url)
+                  logging.getLogger(self.__generator__).debug("Recieved %s bytes from %s with %d",
                                                               str(len(response.read())),
-                                                              url)
+                                                              response.geturl(), 
+                                                              response.getcode())
 
+            except urllib2.HTTPError, e:
+                logging.getLogger(self.__generator__).error('HTTPError[%s] to [%s]'%(str(e.code) + str(e.reason), url))
+            except urllib2.URLError, e:
+                logging.getLogger(self.__generator__).error('HTTPURLError [%s] to [%s]'%(str(e.reason), url))
+            except :
+                import traceback
+                logging.getLogger(self.__generator__).error('Http 2[%s] generic exception: %s'%(url, traceback.format_exc()))
             except:
                 logging.getLogger(self.__generator__).debug("Failed to request %s",
                                                             url)
-
+'''
             time.sleep(random.random() * self._multiplier)
+        logging.getLogger(self.__generator__).debug("http_gen.__call__ run end.")
 
 class smtp_gen():
     '''
